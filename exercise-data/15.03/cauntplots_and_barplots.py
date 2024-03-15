@@ -121,6 +121,35 @@ sns.catplot(x="romantic", y="absences",
             ci=None,
             estimator= median)
 
+# Set the style to "whitegrid"
+sns.set_style("whitegrid")
+
+# Create a count plot of survey responses
+category_order = ["Never", "Rarely", "Sometimes", 
+                  "Often", "Always"]
+
+sns.catplot(x="Parents Advice", 
+            data=survey_data, 
+            kind="count", 
+            order=category_order)
+
+# Set the color palette to "Purples"
+sns.set_style("whitegrid")
+sns.set_palette("Purples")
+
+# Set the context to "paper"
+sns.set_context("paper")
+
+# Create bar plot
+sns.catplot(x="Number of Siblings", y="Feels Lonely",
+            data=survey_data, kind="bar")
+
+# Set the style to "darkgrid"
+sns.set_style("darkgrid")
+
+# Set a custom color palette
+sns.set_palette(["#39A7D0","#36ADA4"])
+
 # Show plot
 plt.show()
 
