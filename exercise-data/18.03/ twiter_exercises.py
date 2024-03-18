@@ -1,5 +1,14 @@
 # Import pandas
 import pandas as pd
+def func1():
+    num = 3
+    print(num)
+
+def func2():
+    global num
+    double_num = num * 2
+    num = 6
+    print(double_num)
 
 # Import Twitter data as DataFrame: df
 df= pd.read_csv("tweeter.csv")
@@ -52,3 +61,5 @@ result=count_entries(tweets_df,'lang')
 
 # Print the result
 print(result)
+
+
