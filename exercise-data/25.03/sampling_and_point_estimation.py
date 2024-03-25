@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+import matplotlib.pyplot as plt
 
 spotify_population = pd.read_feather("spotify_2000_2020.feather")
 
@@ -35,3 +36,20 @@ mean_loudness_samp = np.mean(loudness_samp)
 
 print(mean_loudness_pop)
 print(mean_loudness_samp)
+
+####
+# Visualize the distribution of acousticness with a histogram
+spotify_population['acousticness'].hist(bins=np.arange(0, 1.01, 0.01))
+plt.show()
+
+# Update the histogram to use spotify_mysterious_sample
+spotify_sample['acousticness'].hist(bins=np.arange(0, 1.01, 0.01))
+plt.show()
+
+# Visualize the distribution of duration_minutes as a histogram
+spotify_population['duration_minutes'].hist(bins=np.arange(0, 15.5, 0.5))
+plt.show()
+
+# Update the histogram to use spotify_mysterious_sample2
+spotify_sample['duration_minutes'].hist(bins=np.arange(0, 15.5, 0.5))
+plt.show()
