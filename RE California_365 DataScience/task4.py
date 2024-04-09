@@ -25,3 +25,5 @@ plt.xlabel('Price')
 plt.ylabel('Frequency')
 plt.title('Frequency Distribution of Prices')
 plt.show()
+
+
