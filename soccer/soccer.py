@@ -1,45 +1,61 @@
+# Imports
 import pandas as pd
-import numpy as np
-from scipy.stats import norm
+import matplotlib.pyplot as plt
+import pingouin
+from scipy.stats import mannwhitneyu
+
+# Load men's and women's datasets
+men = pd.read_csv("men_results.csv")
+women = pd.read_csv("women_results.csv")
+
+# Filter the data for the time range and tournament
+men["date"] = pd.to_datetime(men["date"])
+men_subset = men[(men["date"] > "2002-01-01") & (men["tournament"].isin(["FIFA World Cup"]))]
+women["date"] = pd.to_datetime(women["date"])
+women_subset = women[(women["date"] > "2002-01-01") & (women["tournament"].isin(["FIFA World Cup"]))]
+
+# Create group and goals_scored columns
+men_subset["group"] = "men"
+women_subset["group"] = "women"
+men_subset["goals_scored"] = men_subset["home_score"] + men_subset["away_score"]
+women_subset["goals_scored"] = women_subset["home_score"] + women_subset["away_score"]
+
+# Plot histograms to visualize the distribution of goals scored in men's and women's matches
+plt.figure(figsize=(10, 6))
+plt.hist(men_subset["goals_scored"], bins=20, color='blue', alpha=0.7, label='Men')
+plt.hist(women_subset["goals_scored"], bins=20, color='red', alpha=0.7, label='Women')
+plt.xlabel('Goals Scored')
+plt.ylabel('Frequency')
+plt.title('Distribution of Goals Scored in Men\'s and Women\'s FIFA World Cup Matches')
+plt.legend()
+plt.show()
+plt.clf()
 
 
-men_results = pd.read_csv("men_results.csv")
-women_results = pd.read_csv("women_results.csv")
+# Combine women's and men's data and calculate goals scored in each match
+both = pd.concat([women_subset, men_subset], axis=0, ignore_index=True)
 
-# Filter data for FIFA World Cup tournaments since '2002-01-01'
-filtered_men_data = men_results[(men_results['date'] >= '2002-01-01') & (men_results['tournament'] == 'FIFA World Cup')]
-filtered_women_data = women_results[(women_results['date'] >= '2002-01-01') & (women_results['tournament'] == 'FIFA World Cup')]
+# Transform the data for the pingouin Mann-Whitney U t-test/Wilcoxon-Mann-Whitney test
+both_subset = both[["goals_scored", "group"]]
+both_subset_wide = both_subset.pivot(columns="group", values="goals_scored")
 
-# Select relevant columns
-men_data = filtered_men_data[['date', 'home_score', 'away_score']]
-women_data = filtered_women_data[['date', 'home_score', 'away_score']]
+# Perform right-tailed Wilcoxon-Mann-Whitney test with pingouin
+results_pg = pingouin.mwu(x=both_subset_wide["women"],
+                          y=both_subset_wide["men"],
+                          alternative="greater")
 
-# Calculate total goals and mean for men's data
-men_data['total_goals'] = men_data['home_score'] + men_data['away_score']
-men_mean = men_data['total_goals'].mean()
+# Alternative SciPy solution: Perform right-tailed Wilcoxon-Mann-Whitney test with scipy
+results_scipy = mannwhitneyu(x=women_subset["goals_scored"],
+                             y=men_subset["goals_scored"],
+                             alternative="greater")
 
-# Calculate total goals and mean for women's data
-women_data['total_goals'] = women_data['home_score'] + women_data['away_score']
-women_mean = women_data['total_goals'].mean()
+# Extract p-value as a float
+p_val = results_pg["p-val"].values[0]
 
-# Calculate standard deviations for men's and women's data
-men_std = men_data['total_goals'].std()
-women_std = women_data['total_goals'].std()
+# Determine hypothesis test result using sig. level
+if p_val <= 0.01:
+    result = "reject"
+else:
+    result = "fail to reject"
 
-# Calculate standard error
-standard_error = ((men_std ** 2) / men_data.shape[0] + (women_std ** 2) / women_data.shape[0]) ** 0.5
-
-# Calculate z-score
-z_score = (women_mean - men_mean) / standard_error
-
-# Calculate p-value
-p_val = norm.cdf(z_score)
-
-# Determine result based on p-value
-result_categories = ["fail to reject", "reject"]
-result = result_categories[int(p_val <= 0.10)]  # Assuming significance level of 0.10
-
-# Create result dictionary
 result_dict = {"p_val": p_val, "result": result}
-
-print(result_dict)
